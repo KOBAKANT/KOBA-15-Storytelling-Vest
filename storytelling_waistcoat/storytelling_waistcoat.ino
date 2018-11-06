@@ -99,7 +99,7 @@ void loop() {
     fire_mode = !fire_mode;
     if (fire_mode) {
       for (int i = 0; i < 40; i++) {
-        initialize_fadeFire(i);
+        //initialize_fadeFire(i);
       }
     }
   }
@@ -120,7 +120,7 @@ void loop() {
 
   if (fire_mode) {
     // do the fire thing, the number indicates the speed of change
-    fadeFire(10);
+    fadeFire(100);
   }
   else {
     // turn off
