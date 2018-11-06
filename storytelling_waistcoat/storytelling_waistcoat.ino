@@ -38,14 +38,13 @@ boolean last_buttonState[3];
 
 boolean fire_mode;
 
-int fadeSpeed[40]; // number of steps
-int fadeStep_R[40]; // how much it adds each time
-int fadeStep_G[40]; // how much it adds each time
-int fadeStep_B[40]; // how much it adds each time
-boolean drc[40];// fade direction
+// color for fading
 int fadeRed[40];
 int fadeGreen[40];
 int fadeBlue[40];
+
+float intensity[40]; // decides intensity 0-1.0
+float fadeSpeed[40]; // number of steps
 
 
 
@@ -99,7 +98,7 @@ void loop() {
     fire_mode = !fire_mode;
     if (fire_mode) {
       for (int i = 0; i < 40; i++) {
-        //initialize_fadeFire(i);
+        initialize_fadeFire(i);
       }
     }
   }
@@ -120,21 +119,18 @@ void loop() {
 
   if (fire_mode) {
     // do the fire thing, the number indicates the speed of change
-    fadeFire(100);
+    fadeFire(10);
   }
   else {
-    // turn off
-    for (int i = 0; i < 40; i++) {
-      strip.setPixelColor(i, strip.Color(0, 0, 0));
-    }
-    strip.show();
+    // fade off
+    fade_out(10);
   }
 
   delay(10);
 }
 
 void sparkle(int number_of_sparkel) {
-  for (int i = 0; i < 40; i++) {
+  for (int i = 0; i < 80; i++) {
     strip.setPixelColor(i, strip.Color(0, 0, 0));
     strip.show();
   }
@@ -147,67 +143,78 @@ void sparkle(int number_of_sparkel) {
   }
 }
 
-void randomFire(int delayAmount) {
-  for (int i = 0; i < 40; i++) {
-    float intensity = random(100);
-    int t = red * intensity;
-    float tempC = (float)t / 100.0;
-    int rrr = (int)tempC;
-    t = green * intensity;
-    tempC = (float)t / 100.0;
-    int ggg = (int)tempC;
-    t = blue * intensity;
-    tempC = (float)t / 100.0;
-    int bbb = (int)tempC;
-    strip.setPixelColor(i, strip.Color(rrr, ggg, bbb));
-  }
-  strip.show();
-  delay(delayAmount);
-}
-
 void initialize_fadeFire(int i) {
-  int fadeSpeed = random(10, 100); // randomly set how many steps it needs to fade
-  int currentStep = random (2, fadeSpeed);
-  drc[i] = random(1);
-
-  fadeStep_R[i] = red / fadeSpeed;
-  fadeStep_G[i] = green / fadeSpeed;
-  fadeStep_B[i] = blue / fadeSpeed;
-
-  fadeRed[i] = fadeStep_R[i] * currentStep;
-  fadeGreen[i] = fadeStep_G[i] * currentStep;
-  fadeBlue[i] = fadeStep_B[i] * currentStep;
-
-  if (!drc) {
-    fadeStep_R[i] = -fadeStep_R[i];
-    fadeStep_G[i] = -fadeStep_G[i];
-    fadeStep_B[i] = -fadeStep_B[i];
-  }
-
+  // decide what is addded
+  int acc = random(2, 14);
+  fadeSpeed[i] = (float)acc / 200.0; // number of steps
 }
 
 void fadeFire(int delayAmount) {
+  
   for (int i = 0; i < 40; i++) {
-    fadeRed[i] = fadeRed[i] + fadeStep_R[i];
-    fadeGreen[i] = fadeGreen[i] + fadeStep_G[i];
-    fadeStep_B[i] = fadeStep_B[i] + fadeStep_B[i];
+    // make sure that intensity stays within 0-1
+    intensity[i] = constrain(intensity[i], 0.0, 1.0);
+    // calculate the red ammount in float
+    float rr = red * intensity[i];
+    // cast to int
+    int RR = (int)rr;
+    // calculate the green ammount in float
+    float gg = green * intensity[i];
+    // cast to int
+    int GG = (int)gg;
+    // calculate the blue ammount in float
+    float bb = blue * intensity[i];
+    // cast to int
+    int BB = (int)bb;
+    // set the pixel color
+    strip.setPixelColor(i, strip.Color(RR, GG, BB));
+    
+    //---------------------------
+    // culculate the next intensity
+    //---------------------------
 
-    if (fadeRed[i] >= red) {
-      fadeStep_R[i] = -fadeStep_R[i];
-      fadeStep_G[i] = -fadeStep_G[i];
-      fadeStep_B[i] = -fadeStep_B[i];
+    intensity[i] = intensity[i] + fadeSpeed[i];
+    // if it reaches 100% then reverse the fading
+    if (intensity[i] >= 1.0) {
+      fadeSpeed[i] = -fadeSpeed[i];
     }
-
-    fadeRed[i] = constrain(fadeRed[i], 0, red);
-    fadeGreen[i] = constrain(fadeGreen[i], 0, green);
-    fadeBlue[i] = constrain(fadeBlue[i], 0, blue);
-    strip.setPixelColor(i, strip.Color(fadeRed[i], fadeGreen[i], fadeBlue[i]));
-
-    if (fadeRed[i] == 0) {
+    // if it reaches 0% initialize new
+    if (intensity[i] <= 0.0) {
       initialize_fadeFire(i);
     }
+    //---------------------------
   }
   strip.show();
+  // wait, this will change the speed
+  delay(delayAmount);
+}
+
+void fade_out(int delayAmount){
+   for (int i = 0; i < 40; i++) {
+    if (fadeSpeed[i] >0){
+      fadeSpeed[i]=-fadeSpeed[i];
+    }
+    intensity[i] = intensity[i] + fadeSpeed[i];
+       
+    // make sure that intensity stays within 0-1
+    intensity[i] = constrain(intensity[i], 0.0, 1.0);
+    // calculate the red ammount in float
+    float rr = red * intensity[i];
+    // cast to int
+    int RR = (int)rr;
+    // calculate the green ammount in float
+    float gg = green * intensity[i];
+    // cast to int
+    int GG = (int)gg;
+    // calculate the blue ammount in float
+    float bb = blue * intensity[i];
+    // cast to int
+    int BB = (int)bb;
+    // set the pixel color
+    strip.setPixelColor(i, strip.Color(RR, GG, BB));
+  }
+  strip.show();
+  // wait, this will change the speed
   delay(delayAmount);
 }
 
@@ -236,8 +243,8 @@ void colorSelector(int val) {
     blue = 255 - tempVal;
   }
   if (val > 896) {
-    tempVal = val - 768;
-    tempVal = constrain(tempVal, 0, 255);
+    tempVal = val - 895;
+    tempVal = constrain(tempVal, 0, 128);
     red = tempVal;
     green = tempVal;
     blue = tempVal;
