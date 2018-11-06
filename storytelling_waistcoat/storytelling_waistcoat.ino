@@ -9,18 +9,8 @@
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(40, PIN1, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel indicator = Adafruit_NeoPixel(1, PIN2, NEO_GRB + NEO_KHZ800);
-
-// IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
-// pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
-// and minimize distance between Arduino and first pixel.  Avoid connecting
-// on a live circuit...if you must, connect GND first.
 
 
 int pot_val;
@@ -38,15 +28,8 @@ boolean last_buttonState[3];
 
 boolean fire_mode;
 
-// color for fading
-int fadeRed[40];
-int fadeGreen[40];
-int fadeBlue[40];
-
 float intensity[40]; // decides intensity 0-1.0
 float fadeSpeed[40]; // number of steps
-
-
 
 
 void setup() {
@@ -90,12 +73,13 @@ void loop() {
   // read buttons
   for (int t = 0; t < 3; t++) {
     buttonState[t] = digitalRead(buttonPin[t]);
-
   }
-  //Serial.println();
+
+ 
 
   if (buttonState[1] == 0 && buttonState[1] != last_buttonState[1]) {
     fire_mode = !fire_mode;
+    // when pressed the first time, initialize the 
     if (fire_mode) {
       for (int i = 0; i < 40; i++) {
         initialize_fadeFire(i);
@@ -104,11 +88,21 @@ void loop() {
   }
   last_buttonState[1] = buttonState[1];
 
+// button 2 (3rd button) with sparkle effect
   if (buttonState[2] == 0 && buttonState[2] != last_buttonState[2]) {
     // sparkle!
-    sparkle(100); // the number indicates the number/length of the sparkle
+    sparkle(80); // the number indicates the number/length of the sparkle
   }
   last_buttonState[2] = buttonState[2];
+
+  
+// button 0 (top button) with rainbow effect
+   if (buttonState[0] == 0 && buttonState[0] != last_buttonState[0]) {
+    // rainbow!
+    rainbow(64);
+  }
+  last_buttonState[0] = buttonState[0];
+
 
 
   // show on LEDs
@@ -119,7 +113,7 @@ void loop() {
 
   if (fire_mode) {
     // do the fire thing, the number indicates the speed of change
-    fadeFire(10);
+    fadeFire(40);
   }
   else {
     // fade off
@@ -130,7 +124,7 @@ void loop() {
 }
 
 void sparkle(int number_of_sparkel) {
-  for (int i = 0; i < 80; i++) {
+  for (int i = 0; i < 40; i++) {
     strip.setPixelColor(i, strip.Color(0, 0, 0));
     strip.show();
   }
@@ -143,9 +137,23 @@ void sparkle(int number_of_sparkel) {
   }
 }
 
+void rainbow(int number_of_sparkel) {
+  for (int i = 0; i < 40; i++) {
+    strip.setPixelColor(i, strip.Color(0, 0, 0));
+    strip.show();
+  }
+  for (int i = 0; i < number_of_sparkel; i++) {
+    int star = random(40);
+    strip.setPixelColor(star, Wheel((i * (256 / number_of_sparkel)) & 255));
+    strip.show();
+    delay(10);
+    strip.setPixelColor(star, strip.Color(0, 0, 0));
+  }
+}
+
 void initialize_fadeFire(int i) {
   // decide what is addded
-  int acc = random(2, 14);
+  int acc = random(4, 10);
   fadeSpeed[i] = (float)acc / 200.0; // number of steps
 }
 
@@ -250,5 +258,20 @@ void colorSelector(int val) {
     blue = tempVal;
   }
 
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, WheelPos * 3, 0);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(WheelPos * 3, 0,255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(0,255 - WheelPos * 3,WheelPos * 3);
 }
 
