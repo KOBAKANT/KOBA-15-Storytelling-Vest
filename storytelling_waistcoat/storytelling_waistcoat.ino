@@ -3,8 +3,8 @@
 #include <avr/power.h>
 #endif
 
-#define PIN1 9
-#define PIN2 10
+#define PIN1 10
+#define PIN2 9
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -66,6 +66,7 @@ void loop() {
   pot_val = analogRead(A1);
   avg = (avg * (sampleSize - 1) + pot_val) / sampleSize;
   pot_val = avg;
+  Serial.println(pot_val);
 
   // select the color
   colorSelector(pot_val);
@@ -99,7 +100,7 @@ void loop() {
 // button 0 (top button) with rainbow effect
    if (buttonState[0] == 0 && buttonState[0] != last_buttonState[0]) {
     // rainbow!
-    rainbow(64);
+    rainbow(72);
   }
   last_buttonState[0] = buttonState[0];
 
@@ -146,7 +147,7 @@ void rainbow(int number_of_sparkel) {
     int star = random(40);
     strip.setPixelColor(star, Wheel((i * (256 / number_of_sparkel)) & 255));
     strip.show();
-    delay(10);
+    delay(20);
     strip.setPixelColor(star, strip.Color(0, 0, 0));
   }
 }
@@ -227,37 +228,32 @@ void fade_out(int delayAmount){
 }
 
 void colorSelector(int val) {
+val=map(val,0,470,0,767);
+val=constrain(val,0,767);
+  
   int tempVal;
-  if (val < 384) {
-    tempVal = val - 128;
+  if (val < 255) {
+    tempVal = val;
     tempVal = constrain(tempVal, 0, 255);
     red = 255 - tempVal;
     green = tempVal;
     blue = 0;
   }
 
-  if (val > 384 && val < 640) {
-    tempVal = val - 384;
+  if (val > 255 && val < 516) {
+    tempVal = val - 255;
     tempVal = constrain(tempVal, 0, 255);
     red = 0;
     green = 255 - tempVal;
     blue = tempVal;
   }
-  if (val > 640 && val < 896) {
-    tempVal = val - 640;
+  if (val > 516 && val < 768) {
+    tempVal = val - 516;
     tempVal = constrain(tempVal, 0, 255);
     red = tempVal;
     green = 0;
     blue = 255 - tempVal;
   }
-  if (val > 896) {
-    tempVal = val - 895;
-    tempVal = constrain(tempVal, 0, 128);
-    red = tempVal;
-    green = tempVal;
-    blue = tempVal;
-  }
-
 }
 
 // Input a value 0 to 255 to get a color value.
