@@ -22,7 +22,7 @@ int red;
 int green;
 int blue;
 
-int buttonPin[] = {6, 5, 4};
+int buttonPin[] = {4, 5, 6}; //button top, 2nd, 3rd (4th button does not have switch on it)
 boolean buttonState[3];
 boolean last_buttonState[3];
 
@@ -100,7 +100,6 @@ void loop() {
 // button 0 (top button) with rainbow effect
    if (buttonState[0] == 0 && buttonState[0] != last_buttonState[0]) {
     // rainbow!
-    //rainbow_sparkle(72);
     rainbow();
   }
   last_buttonState[0] = buttonState[0];
