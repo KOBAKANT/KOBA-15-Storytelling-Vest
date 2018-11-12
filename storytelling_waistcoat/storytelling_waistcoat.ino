@@ -100,7 +100,8 @@ void loop() {
 // button 0 (top button) with rainbow effect
    if (buttonState[0] == 0 && buttonState[0] != last_buttonState[0]) {
     // rainbow!
-    rainbow(72);
+    //rainbow_sparkle(72);
+    rainbow();
   }
   last_buttonState[0] = buttonState[0];
 
@@ -124,6 +125,40 @@ void loop() {
   delay(10);
 }
 
+void rainbow(){
+
+// turn all of them off
+for(int i=0; i< 40; i++) {
+  strip.setPixelColor(i, strip.Color(0, 0, 0)); 
+}
+strip.show();
+
+// turn the pixel one by one in rainbow color
+for(int i=0; i< 40; i++) {
+  strip.setPixelColor(i, Wheel((i * 256 / 40) & 255)); 
+  strip.show();
+  delay(20);
+}
+
+for(int j=0; j<128; j++) {
+    for(int i=0; i< 40; i++) {
+      strip.setPixelColor(i, Wheel(((i * 256 / 40) + j) & 255));
+    }
+    strip.show();
+    delay(5);
+}
+
+
+// turn the pixel one by one in rainbow color
+for(int i=40; i>0; i--) {
+  strip.setPixelColor(i, strip.Color(0, 0, 0)); 
+  strip.show();
+  delay(20);
+}
+    
+  
+}
+
 void sparkle(int number_of_sparkel) {
   for (int i = 0; i < 40; i++) {
     strip.setPixelColor(i, strip.Color(0, 0, 0));
@@ -138,7 +173,7 @@ void sparkle(int number_of_sparkel) {
   }
 }
 
-void rainbow(int number_of_sparkel) {
+void rainbow_sparkle(int number_of_sparkel) {
   for (int i = 0; i < 40; i++) {
     strip.setPixelColor(i, strip.Color(0, 0, 0));
     strip.show();
