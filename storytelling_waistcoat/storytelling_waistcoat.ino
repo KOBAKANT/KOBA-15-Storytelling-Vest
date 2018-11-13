@@ -19,22 +19,22 @@ Adafruit_NeoPixel indicator = Adafruit_NeoPixel(1, PIN2, NEO_GRB + NEO_KHZ800);
 
 // SNOW mode
 // change the color of the snow falling
-int snow_R=88; // red value
-int snow_G=100; // green value
-int snow_B=64; // blue value
+int snow_R = 88; // red value
+int snow_G = 100; // green value
+int snow_B = 64; // blue value
 
 // change the number below for the snow mode speed
 float snow_fade_speed = 0.03; //smaller this is, longer it falls
-float snow_pass_speed=0.17;
-int snow_fall_speed=25; // bigger the number, slower the light posisiton falls
-int snow_fall_frequency=17; // smaller the number, more frequent
+float snow_pass_speed = 0.17;
+int snow_fall_speed = 25; // bigger the number, slower the light posisiton falls
+int snow_fall_frequency = 17; // smaller the number, more frequent
 
 // MOOD MAKER mode
-int moodSpeed=40; // the number indicates the speed of change
+int moodSpeed = 40; // the number indicates the speed of change
 
 
 // RAINBOW sparkle mode
-int sparkle_num=64; // change the number of the rainbow sparkle
+int sparkle_num = 64; // change the number of the rainbow sparkle
 
 //------------------------------------------
 //------------------------------------------
@@ -97,10 +97,13 @@ void loop() {
   pot_val = analogRead(A1);
   avg = (avg * (sampleSize - 1) + pot_val) / sampleSize;
   pot_val = avg;
-
-
+  
   // select the color
   colorSelector(pot_val);
+
+  // show on indicator LED
+  indicator.setPixelColor(0, indicator.Color(red, green, blue));
+  indicator.show();
 
   // read buttons
   for (int t = 0; t < 3; t++) {
@@ -110,9 +113,7 @@ void loop() {
   // store the last mode
   lastMode = mode;
 
-
   if (buttonState[1] == 0 && buttonState[1] != last_buttonState[1]) {
-
     // switch the moe according to the button state
     if (lastMode == 1) {
       mode = 0;
@@ -120,7 +121,6 @@ void loop() {
     else {
       mode = 1;
     }
-
     // when pressed the first time, initialize the fadeFire
     if (mode == 1) {
       for (int i = 0; i < 40; i++) {
@@ -140,7 +140,6 @@ void loop() {
     else {
       mode = 2;
     }
-
     // when pressed the first time, initialize the snow mode
     if (mode == 2) {
       for (int i = 0; i < 40; i++) {
@@ -160,30 +159,24 @@ void loop() {
     rainbow_sparkle(sparkle_num); // the number indicates the number/length of the sparkle
   }
   last_buttonState[0] = buttonState[0];
+  
 
-
-  // show on LEDs
-  indicator.setPixelColor(0, indicator.Color(red, green, blue));
-  indicator.show();
-
-
-  Serial.println(mode);
   switch (mode) {
     case 0:
-      fade_out(10);
+      fade_out(10); // turn/fade off
       break;
 
     case 1:
-      // do the fire thing, the number indicates the speed of change
+      // do the fire thing
       fadeFire(moodSpeed);
       break;
 
     case 2:
-    // once in a while drop some snow
+      // once in a while drop some snow
       if (millis() % snow_fall_frequency == 0) {
         drop_snow();
       }
-      snow();
+      snow(); //snow mode
       break;
   }
 
@@ -233,9 +226,9 @@ void snow() {
     int sB = (int)snow_B * intensity[i];
 
     // make sure that the color stays within the range
-    sR=constrain(sR,0,255);
-    sG=constrain(sG,0,255);
-    sB=constrain(sB,0,255);
+    sR = constrain(sR, 0, 255);
+    sG = constrain(sG, 0, 255);
+    sB = constrain(sB, 0, 255);
 
     // set the color on the pixel
     strip.setPixelColor(i, strip.Color(sR, sG, sB));
@@ -256,9 +249,9 @@ void snow() {
     int sG = (int)snow_G * intensity[i];
     int sB = (int)snow_B * intensity[i];
     // make sure that the color stays within the range
-    sR=constrain(sR,0,255);
-    sG=constrain(sG,0,255);
-    sB=constrain(sB,0,255);
+    sR = constrain(sR, 0, 255);
+    sG = constrain(sG, 0, 255);
+    sB = constrain(sB, 0, 255);
 
     // set the color on the led
     strip.setPixelColor(i, strip.Color(sR, sG, sB));
@@ -275,15 +268,12 @@ void snow() {
 }
 
 void initialize_fadeFire(int i) {
-
   // decide what is addded
   int acc = random(4, 10);
   fadeSpeed[i] = (float)acc / 200.0; // number of steps
-
 }
 
 void fadeFire(int delayAmount) {
-
   for (int i = 0; i < 40; i++) {
     // make sure that intensity stays within 0-1
     intensity[i] = constrain(intensity[i], 0.0, 1.0);
@@ -306,7 +296,6 @@ void fadeFire(int delayAmount) {
         strip.setPixelColor(i, strip.Color(0, 0, 0));
       }
     }
-
     //---------------------------
     // culculate the next intensity
     //---------------------------
