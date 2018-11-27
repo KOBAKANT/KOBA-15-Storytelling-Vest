@@ -19,6 +19,7 @@ Adafruit_NeoPixel indicator = Adafruit_NeoPixel(1, PIN2, NEO_GRB + NEO_KHZ800);
 
 // SNOW mode
 // change the color of the snow falling
+// color should stay between 0-255
 int snow_R = 88; // red value
 int snow_G = 100; // green value
 int snow_B = 64; // blue value
@@ -30,11 +31,16 @@ int snow_fall_speed = 25; // bigger the number, slower the light posisiton falls
 int snow_fall_frequency = 17; // smaller the number, more frequent
 
 // MOOD MAKER mode
-int moodSpeed = 40; // the number indicates the speed of change
+int moodSpeed = 40; // the number indicates the speed of change, bigger it is slower defalt 40
+// if you want to make it even slower, make this number bigger. 
+// make sure it has comma .0  defalt is 200.0
+float speedHandler = 200.0;  
 
+// overall brightness of the LEDs, defalt 128, between 0-255
+int pixelBrightness=128;
 
 // RAINBOW sparkle mode
-int sparkle_num = 64; // change the number of the rainbow sparkle
+int sparkle_num = 80; // change the number of the rainbow sparkle
 
 //------------------------------------------
 //------------------------------------------
@@ -65,7 +71,7 @@ void setup() {
 
   // setup neo pixels. strip is the jacket
   strip.begin();
-  strip.setBrightness(128);
+  strip.setBrightness(pixelBrightness);
   strip.show(); // Initialize all pixels to 'off'
 
 
@@ -156,7 +162,8 @@ void loop() {
   // button 0 (top button) with rainbow effect
   if (buttonState[0] == 0 && buttonState[0] != last_buttonState[0]) {
     // rainbow sparkle!
-    rainbow_sparkle(sparkle_num); // the number indicates the number/length of the sparkle
+    //rainbow_sparkle(sparkle_num); // the number indicates the number/length of the sparkle
+    sparkle(sparkle_num); // white sparkle
   }
   last_buttonState[0] = buttonState[0];
   
@@ -249,9 +256,9 @@ void snow() {
     int sG = (int)snow_G * intensity[i];
     int sB = (int)snow_B * intensity[i];
     // make sure that the color stays within the range
-    sR = constrain(sR, 0, 255);
-    sG = constrain(sG, 0, 255);
-    sB = constrain(sB, 0, 255);
+    sR = constrain(sR, 0, 254);
+    sG = constrain(sG, 0, 254);
+    sB = constrain(sB, 0, 254);
 
     // set the color on the led
     strip.setPixelColor(i, strip.Color(sR, sG, sB));
@@ -270,7 +277,8 @@ void snow() {
 void initialize_fadeFire(int i) {
   // decide what is addded
   int acc = random(4, 10);
-  fadeSpeed[i] = (float)acc / 200.0; // number of steps
+  
+  fadeSpeed[i] = (float)acc / speedHandler; // number of steps
 }
 
 void fadeFire(int delayAmount) {
